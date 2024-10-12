@@ -1,0 +1,1 @@
+self.grid = np.zeros((m, n))
