@@ -26,7 +26,7 @@ class AppleGame():
         """
         self.score = 0
         self.grid = np.random.randint(1, 10, size=(self.m, self.n))
-        pass
+        self.render()
 
     def get_obs(self) -> np.ndarray:
         """ 게임판의 상태를 반환
@@ -36,7 +36,7 @@ class AppleGame():
         """
         return self.grid
 
-    def step(self, sqaure):
+    def step(self, square):
         """ 플레이어의 행동을 받아 게임을 진행
 
         플레이어가 지정한 사각형 내의 숫자의 합이 10인지 확인
@@ -46,14 +46,31 @@ class AppleGame():
         Args:
             sqaure (_type_): 플레이어가 지정한 사각형의 좌표(좌상단, 우하단)
         """
-        pass
+        (x1,y1), (x2,y2) = square
+
+        left, right = sorted((x1, x2))
+        top, bottom = sorted((y1, y2))
+
+        selected = self.grid[left:right+1, top:bottom+1]
+        print('선택된 숫자:', selected)
+        total = np.sum(selected)
+        
+        if total == 10:
+            self.score += np.count_nonzero(selected)
+            self.grid[left:right+1, top:bottom+1]=0
+            print('점수: ',self.score)
+        self.steps += 1
+        self.render()
+
 
     def is_game_over(self):
         """ 게임이 종료 여부 반환
         1. 현재 턴이 최대 턴 수에 도달했을 때
         2. 게임판에 남아있는 사과의 합이 10 미만일 때
         """
-        pass
+        if self.steps >= self.max_steps or np.sum(self.grid) < 10:
+            return True
+        return False
 
     def get_score(self):
         """ 현재 에피소드의 현재 점수 반환
@@ -63,25 +80,32 @@ class AppleGame():
         """
         return self.score
 
-    def render(self, render_mode):
+    def render(self, render_mode='console'):
         """ 현재 게임판의 상태를 이미지로 리턴
         render_mode에 따라 다른 이미지를 리턴
         """
-        pass
+        # 열 번호 출력
+        if render_mode == 'console':
+            print("     " + " ".join([f"{i:2}" for i in range(self.n)]))  # 열 번호
+            print("   " + "-" * (self.n * 3))  # 구분선
+        
+        # 행 번호와 함께 각 행 출력
+            for i, row in enumerate(self.grid):
+                print(f"{i:2} | " + " ".join([f"{int(x):2}" for x in row]))  # 각 행에 행 번호 추가
+            remaining_steps = self.max_steps - self.steps
+            print('남은 스텝: ',remaining_steps)
 
 
 if __name__ == "__main__":
     game = AppleGame()
     game.reset()
-    print(game.get_obs())
 
     done = False
     while not done:
         square_1 = tuple(map(int, input().split()))
-        sqaure_2 = tuple(map(int, input().split()))
-        game.step((square_1, sqaure_2))
+        square_2 = tuple(map(int, input().split()))
+        game.step((square_1, square_2))
 
-        print(game.get_obs())
         done = game.is_game_over()
         print(game.get_score())
         print(done)
