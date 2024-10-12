@@ -58,7 +58,7 @@ class AppleGame():
         if total == 10:
             self.score += np.count_nonzero(selected)
             self.grid[left:right+1, top:bottom+1]=0
-            print('점수: ',self.score)
+            
         self.steps += 1
         self.render()
 
@@ -94,6 +94,7 @@ class AppleGame():
                 print(f"{i:2} | " + " ".join([f"{int(x):2}" for x in row]))  # 각 행에 행 번호 추가
             remaining_steps = self.max_steps - self.steps
             print('남은 스텝: ',remaining_steps)
+            print('점수: ',self.score)
 
 
 if __name__ == "__main__":
@@ -108,4 +109,3 @@ if __name__ == "__main__":
 
         done = game.is_game_over()
         print(game.get_score())
-        print(done)
