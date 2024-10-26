@@ -1,34 +1,24 @@
 import pygame
-import numpy as np
+
 
 class UI:
     def __init__(self, game, cell_size=50):
-        """Initialize the UI class.
-
-        Args:
-            game (AppleGame): Instance of the AppleGame class.
-            cell_size (int, optional): Size of each cell in the grid.
-        """
         self.game = game
         self.cell_size = cell_size
         self.width = game.n * cell_size
         self.height = game.m * cell_size
+        self.screen = pygame.display.set_mode((self.width, self.height + 50))  # Add extra space for info
+        pygame.font.init()  # Initialize the font module
+        self.font = pygame.font.SysFont(None, 36)  # Initialize font
 
-        # Initialize PyGame
-        pygame.init()
-        self.screen = pygame.display.set_mode((self.width, self.height))
-        pygame.display.set_caption("Apple Game")
-
-        # Font for displaying text
-        self.font = pygame.font.Font(None, 36)
+        self.selected_square = []  # for user input
 
     def draw_grid(self):
-        """Draw the game grid on the screen."""
+        """Draw the game grid."""
         for row in range(self.game.m):
             for col in range(self.game.n):
-                # Get the value in the grid
-                value = int(self.game.grid[row, col])
-                color = (255, 255, 255) if value == 0 else (0, 255, 0)  # Green for apples, white for empty
+                value = self.game.grid[row][col]
+                color = (255, 255, 255) if value == 0 else (0, 255, 0)
                 pygame.draw.rect(
                     self.screen, color,
                     pygame.Rect(col * self.cell_size, row * self.cell_size, self.cell_size, self.cell_size)
@@ -62,6 +52,11 @@ class UI:
                 x, y = event.pos
                 row = y // self.cell_size
                 col = x // self.cell_size
-                return (row, col)  # Return the selected cell
-        return None
+                coord = (row, col)
 
+                self.selected_square.append(coord)
+                if len(self.selected_square) == 2:
+                    self.game.step(tuple(self.selected_square))
+                    self.selected_square = []  # Clear selected squares
+
+        return True

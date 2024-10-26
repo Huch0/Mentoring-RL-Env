@@ -26,7 +26,6 @@ class AppleGame():
         """
         self.score = 0
         self.grid = np.random.randint(1, 10, size=(self.m, self.n))
-        self.render()
 
     def get_obs(self) -> np.ndarray:
         """ 게임판의 상태를 반환
@@ -52,7 +51,6 @@ class AppleGame():
         top, bottom = sorted((y1, y2))
 
         selected = self.grid[left:right+1, top:bottom+1]
-        print('선택된 숫자:', selected)
         total = np.sum(selected)
         
         if total == 10:
@@ -60,7 +58,6 @@ class AppleGame():
             self.grid[left:right+1, top:bottom+1]=0
             
         self.steps += 1
-        self.render()
 
 
     def is_game_over(self):
