@@ -20,11 +20,11 @@ class AppleGameEnv(gym.Env):
 
         self.game = AppleGame(m, n, max_steps)
 
-        # m x n 크기의 게임판 0 ~ 1
+        # m x n 크기의 게임판 
         self.observation_space = gym.spaces.Box(low=1, high=9, shape=(m, n), dtype=np.int8)
 
         # 가능한 행동: (x1, y1), (x2, y2) 0 ~ 1
-        # self.action_space = gym.spaces.MultiDiscrete([m, n, m, n])
+        self.action_space = gym.spaces.MultiDiscrete([m, n, m, n])
 
     def reset(self):
         """ 게임 초기화
@@ -33,8 +33,9 @@ class AppleGameEnv(gym.Env):
         self.game.reset()
         return self.game.get_obs(), self._get_info()
 
+    # 0~1 정규화
     def _get_obs(self):
-        return self.game.get_obs()
+        return (self.game.get_obs() - 1) / 8
 
     def _get_info(self):
         return {"score": self.game.score, "steps": self.game.steps}
@@ -45,8 +46,14 @@ class AppleGameEnv(gym.Env):
         Args:
             action (_type_): 플레이어가 지정한 사각형의 좌표(좌상단, 우하단)
         """
-        self.game.step(action)
-
+        x1, y1, x2, y2 = action
+        # 0~1 정규화
+        x1_normalized = x1 / (self.m - 1)
+        y1_normalized = y1 / (self.n - 1)
+        x2_normalized = x2 / (self.m - 1)
+        y2_normalized = y2 / (self.n - 1)
+        
+        self.game.step(((x1, y1), (x2, y2)))
         terminated = self.game.is_game_over()
         truncated = self.game.steps >= self.game.max_steps
 
