@@ -1,8 +1,7 @@
 import numpy as np
 
-
 class AppleGame():
-    def __init__(self, m=10, n=10, max_steps=100):
+    def __init__(self, m=36, n=36, max_steps=100):
         """ AppleGame 객체 생성
 
         Args:
@@ -19,14 +18,15 @@ class AppleGame():
         # 현재 에피소드의 총 점수
         self.score = 0
         # 게임판
-        self.grid = np.zeros((m, n))
+        self.grid = np.zeros((1, m, n), dtype=np.uint8)
 
     def reset(self):
         """ 게임 초기화
         """
         self.score = 0
-        self.grid = np.random.randint(1, 10, size=(self.m, self.n))
-        self.render()
+
+        self.steps = 0
+        self.grid = np.random.randint(1, 10, size=(1, self.m, self.n), dtype=np.uint8)
 
     def get_obs(self) -> np.ndarray:
         """ 게임판의 상태를 반환
@@ -51,13 +51,15 @@ class AppleGame():
         left, right = sorted((x1, x2))
         top, bottom = sorted((y1, y2))
 
-        selected = self.grid[left:right+1, top:bottom+1]
-        print('선택된 숫자:', selected)
+
+
+        selected = self.grid[0, left:right+1, top:bottom+1]
+
         total = np.sum(selected)
         
         if total == 10:
             self.score += np.count_nonzero(selected)
-            self.grid[left:right+1, top:bottom+1]=0
+            self.grid[0, left:right+1, top:bottom+1]=0
             
         self.steps += 1
         self.render()
@@ -100,12 +102,14 @@ class AppleGame():
 if __name__ == "__main__":
     game = AppleGame()
     game.reset()
+    game.render()
 
     done = False
     while not done:
         square_1 = tuple(map(int, input().split()))
         square_2 = tuple(map(int, input().split()))
         game.step((square_1, square_2))
+        game.render()
 
         done = game.is_game_over()
         print(game.get_score())
