@@ -15,6 +15,12 @@ OpenAI Gymnasium 라이브러리를 활용하여 커스텀 강화학습 환경�
 
 - requirements.txt 참조
 
+Windows 유저는 WSL2 환경에서 실행하는 것을 권장합니다.
+
+- [WSL2 + Windows Terminal + Oh My Zsh + Powerlevel10k 설정 방법](https://gist.github.com/zachrank/fc71ed301e9823264ddac4fb77975735)
+
+- [Homebrew 설치](https://brew.sh)
+
 ## 설치방법
 
 - 파이썬 가상환경 설정
@@ -27,6 +33,7 @@ OpenAI Gymnasium 라이브러리를 활용하여 커스텀 강화학습 환경�
 - 패키지 설치
 
     ```bash
+    brew install swig
     pip install -r requirements.txt
     ```
 
