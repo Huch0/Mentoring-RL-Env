@@ -1,6 +1,6 @@
 import gymnasium as gym
 import numpy as np
-from AppleGameEnv.AppleGame import AppleGame
+from AppleGame import AppleGame
 
 
 class AppleGameEnv(gym.Env):
@@ -18,26 +18,36 @@ class AppleGameEnv(gym.Env):
         self.steps = 0
         self.max_steps = max_steps
 
+        self.reward = 0
+        self.cur_score = 0
+
         self.game = AppleGame(m, n, max_steps)
 
-        # m x n 크기의 게임판 0 ~ 1
-        self.observation_space = gym.spaces.Box(low=1, high=9, shape=(m, n), dtype=np.int8)
+        # m x n 크기의 게임판 [1, 9]
+        self.observation_space = gym.spaces.Box(low=0, high=255, shape=(1, m, n), dtype=np.uint8)
 
-        # 가능한 행동: (x1, y1), (x2, y2) 0 ~ 1
-        # self.action_space = gym.spaces.MultiDiscrete([m, n, m, n])
+        # 가능한 행동: (x1, y1), (x2, y2) [-1, 1]
+        self.action_space = gym.spaces.Box(low=-1, high=1, shape=(4,), dtype=np.float32)
 
-    def reset(self):
+    def reset(self, seed=None):
         """ 게임 초기화
         """
         self.steps = 0
-        self.game.reset()
+
+        self.reward = 0
+        self.cur_score = 0
+        self.game.reset(seed)
         return self.game.get_obs(), self._get_info()
 
     def _get_obs(self):
         return self.game.get_obs()
 
     def _get_info(self):
-        return {"score": self.game.score, "steps": self.game.steps}
+        return {
+            "score": self.game.score,
+            "steps": self.game.steps,
+            "reward": self.reward
+        }
 
     def step(self, action):
         """ 행동을 받아 게임을 진행
@@ -45,11 +55,32 @@ class AppleGameEnv(gym.Env):
         Args:
             action (_type_): 플레이어가 지정한 사각형의 좌표(좌상단, 우하단)
         """
+        # [-1. 1] -> [0, 1]
+        action = (action + np.ones(4)) / 2
+
+        # [0, 1] -> [0, m - 1] / [0, n - 1]
+        # e.g. mxn = 10x10
+        # [0, 0.1) -> 0
+        # [0.1, 0.2) -> 1
+        # [0.2, 0.3) -> 2
+        # [0.9, 1) -> 9
+
+        action = (action * np.array([self.m, self.n, self.m, self.n])).astype(np.int8)
+
         self.game.step(action)
 
         terminated = self.game.is_game_over()
         truncated = self.game.steps >= self.game.max_steps
 
-        reward = self.game.score
+        self.reward = self.game.score - self.cur_score
+        self.cur_score = self.game.score
 
-        return self.game.get_obs(), reward, terminated, truncated, self._get_info()
+        return self.game.get_obs(), self.reward, terminated, truncated, self._get_info()
+
+    def render(self, render_mode="console"):
+        """ 게임판을 출력
+        """
+        if render_mode == "console":
+            return self.game.render()
+        else:
+            raise NotImplementedError

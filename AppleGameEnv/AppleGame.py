@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 class AppleGame():
@@ -10,6 +11,8 @@ class AppleGame():
             n (int, optional): 게임판의 열 수
             max_steps (int, optional): 게임의 최대 턴 수
         """
+        self.seed = None
+
         self.m = m
         self.n = n
 
@@ -19,13 +22,25 @@ class AppleGame():
         # 현재 에피소드의 총 점수
         self.score = 0
         # 게임판
-        self.grid = np.zeros((m, n))
+        self.grid = np.zeros((1, m, n), dtype=np.uint8)
 
-    def reset(self):
+    def reset(self, seed=None):
         """ 게임 초기화
         """
+        # Reset PRNG
+        if seed is not None:
+            self.seed = seed
+            np.random.seed(self.seed)
+            random.seed(self.seed)
+        else:
+            if self.seed is None:
+                self.seed = np.random.randint(0, 1000)
+                np.random.seed(self.seed)
+                random.seed(self.seed)
+
+        self.steps = 0
         self.score = 0
-        self.grid = np.random.randint(1, 10, size=(self.m, self.n))
+        self.grid = np.random.randint(1, 10, size=(1, self.m, self.n), dtype=np.uint8)
 
     def get_obs(self) -> np.ndarray:
         """ 게임판의 상태를 반환
@@ -45,20 +60,19 @@ class AppleGame():
         Args:
             sqaure (_type_): 플레이어가 지정한 사각형의 좌표(좌상단, 우하단)
         """
-        (x1,y1), (x2,y2) = square
+        x1, y1, x2, y2 = square
 
         left, right = sorted((x1, x2))
         top, bottom = sorted((y1, y2))
 
-        selected = self.grid[left:right+1, top:bottom+1]
+        selected = self.grid[:, left:right+1, top:bottom+1]
         total = np.sum(selected)
-        
+
         if total == 10:
             self.score += np.count_nonzero(selected)
-            self.grid[left:right+1, top:bottom+1]=0
-            
-        self.steps += 1
+            self.grid[:, left:right+1, top:bottom+1] = 0
 
+        self.steps += 1
 
     def is_game_over(self):
         """ 게임이 종료 여부 반환
@@ -85,13 +99,13 @@ class AppleGame():
         if render_mode == 'console':
             print("     " + " ".join([f"{i:2}" for i in range(self.n)]))  # 열 번호
             print("   " + "-" * (self.n * 3))  # 구분선
-        
-        # 행 번호와 함께 각 행 출력
-            for i, row in enumerate(self.grid):
+
+            # 행 번호와 함께 각 행 출력
+            for i, row in enumerate(self.grid[0]):
                 print(f"{i:2} | " + " ".join([f"{int(x):2}" for x in row]))  # 각 행에 행 번호 추가
             remaining_steps = self.max_steps - self.steps
-            print('남은 스텝: ',remaining_steps)
-            print('점수: ',self.score)
+            print('남은 스텝: ', remaining_steps)
+            print('점수: ', self.score)
 
 
 if __name__ == "__main__":
