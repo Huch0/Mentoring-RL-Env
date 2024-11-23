@@ -4,7 +4,7 @@ from AppleGame import AppleGame
 
 
 class AppleGameEnv(gym.Env):
-    def __init__(self, m=10, n=10, max_steps=100):
+    def __init__(self, m=36, n=36, max_steps=1000):
         """ AppleGame 환경 생성
 
         Args:
@@ -29,9 +29,12 @@ class AppleGameEnv(gym.Env):
         # 가능한 행동: (x1, y1), (x2, y2) [-1, 1]
         self.action_space = gym.spaces.Box(low=-1, high=1, shape=(4,), dtype=np.float32)
 
-    def reset(self, seed=None):
+    def reset(self, seed=None, options=None):
         """ 게임 초기화
         """
+        if options is not None:
+            raise ValueError(f"options: {options}")
+
         self.steps = 0
 
         self.reward = 0

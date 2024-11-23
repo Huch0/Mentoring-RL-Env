@@ -1,0 +1,5 @@
+setup.py
+AppleGameEnv.egg-info/PKG-INFO
+AppleGameEnv.egg-info/SOURCES.txt
+AppleGameEnv.egg-info/dependency_links.txt
+AppleGameEnv.egg-info/top_level.txt
