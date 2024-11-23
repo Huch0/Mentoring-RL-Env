@@ -13,20 +13,62 @@ class UI:
 
         self.selected_square = []  # for user input
 
+    def draw_apple(self, x, y, value):
+        """Draw an apple at the specified position with a number on it."""
+        # Draw the stem (rectangle on top)
+        stem_color = (100, 50, 10)  # Brown
+        stem_width = self.cell_size // 8
+        stem_height = self.cell_size // 4
+        pygame.draw.rect(
+            self.screen, stem_color,
+            pygame.Rect(
+                x + self.cell_size // 2 - stem_width // 2,
+                y + 1,  # Slightly above the circle
+                stem_width, stem_height
+            )
+        )
+        
+        # Draw the apple (circle for the body)
+        apple_color = (255, 0, 0)  # Red
+        pygame.draw.circle(
+            self.screen, apple_color,
+            (x + self.cell_size // 2, y + self.cell_size // 2),  # Center of the cell
+            self.cell_size // 2 - 5  # Radius
+        )
+
+
+        # Draw the leaf (small green ellipse)
+        leaf_color = (0, 255, 0)  # Green
+        pygame.draw.ellipse(
+            self.screen, leaf_color,
+            pygame.Rect(
+                x + self.cell_size // 2 + 5,
+                y,  # Next to the stem
+                self.cell_size // 4, self.cell_size // 8
+            )
+        )
+
+        # Draw the value if it's non-zero
+        if value > 0:
+            text = self.font.render(str(value), True, (255, 255, 255))  # White number
+            text_rect = text.get_rect(center=(x + self.cell_size // 2, y + self.cell_size // 2))
+            self.screen.blit(text, text_rect)
+
     def draw_grid(self):
         """Draw the game grid."""
         for row in range(self.game.m):
             for col in range(self.game.n):
                 value = self.game.grid[row][col]
-                color = (255, 255, 255) if value == 0 else (0, 255, 0)
-                pygame.draw.rect(
-                    self.screen, color,
-                    pygame.Rect(col * self.cell_size, row * self.cell_size, self.cell_size, self.cell_size)
-                )
-                # Draw the value if it's non-zero
+                x = col * self.cell_size
+                y = row * self.cell_size
                 if value > 0:
-                    text = self.font.render(str(value), True, (0, 0, 0))
-                    self.screen.blit(text, (col * self.cell_size + 15, row * self.cell_size + 10))
+                    self.draw_apple(x, y, value)  # Draw apple if value > 0
+                else:
+                    # Draw empty cell background
+                    pygame.draw.rect(
+                        self.screen, (0, 0, 0),  # White background
+                        pygame.Rect(x, y, self.cell_size, self.cell_size)
+                    )
 
     def draw_info(self):
         """Draw additional information like score and remaining steps."""
@@ -37,8 +79,8 @@ class UI:
 
     def render(self):
         """Render the game state."""
-        self.screen.fill((0, 0, 0))  # Clear screen
-        self.draw_grid()  # Draw grid
+        self.screen.fill((0, 0, 0))  # Clear screen with black background
+        self.draw_grid()  # Draw grid with apples
         self.draw_info()  # Draw score and steps
         pygame.display.flip()  # Update the display
 
