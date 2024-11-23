@@ -1,8 +1,6 @@
 import gymnasium as gym
 import numpy as np
-
-import AppleGameEnv.AppleGame as AppleGame
-
+from AppleGameEnv.AppleGame import AppleGame
 
 
 

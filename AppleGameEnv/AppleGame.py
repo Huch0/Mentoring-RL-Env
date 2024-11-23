@@ -1,7 +1,10 @@
 import numpy as np
 
 class AppleGame():
-    def __init__(self, m=36, n=36, max_steps=100):
+
+
+    def __init__(self, m=9, n=16, max_steps=50):
+
         """ AppleGame 객체 생성
 
         Args:
@@ -46,7 +49,9 @@ class AppleGame():
         Args:
             sqaure (_type_): 플레이어가 지정한 사각형의 좌표(좌상단, 우하단)
         """
-        (x1,y1), (x2,y2) = square
+
+
+        (x1, y1), (x2, y2) = square
 
         left, right = sorted((x1, x2))
         top, bottom = sorted((y1, y2))
