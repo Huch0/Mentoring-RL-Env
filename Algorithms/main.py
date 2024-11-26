@@ -2,7 +2,7 @@ import numpy as np
 import pygame
 from GridWorld import GridWorld
 from RLAlgorithms import PolicyIteration#, ValueIteration, QLearning
-from visualization import GridWorldViz
+from UI import GridWorldViz
 
 
 def main(seed=42):
