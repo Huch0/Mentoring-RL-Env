@@ -349,6 +349,9 @@ class GridWorldViz:
 
         # Draw buttons
         for i, button in enumerate(self.algo_control_buttons):
+            if button['text'] == 'Generate Experience':
+                break
+
             pygame.draw.rect(self.screen, self.WHITE, button['rect'])
             pygame.draw.rect(self.screen, self.BLACK, button['rect'], 1)
             text = self.font.render(button['text'], True, self.BLACK)
