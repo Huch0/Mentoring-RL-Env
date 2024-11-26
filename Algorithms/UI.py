@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 import sys
-from RLAlgorithms import PolicyIteration  # , ValueIteration, QLearning
+from RLAlgorithms import PolicyIteration, ValueIteration  # , QLearning
 
 
 class GridWorldViz:
@@ -60,13 +60,13 @@ class GridWorldViz:
         # Visualization configuration buttons
         self.viz_config_buttons = [
             {'text': 'Toggle Rewards', 'rect': pygame.Rect(
-                self.viz_sec_button_left, 20 + 50, self.button_width, self.button_height), 'state': True},
+                self.viz_sec_button_left, 20 + 50, self.button_width, self.button_height), 'state': True, 'visible': True},
             {'text': 'Toggle State Values', 'rect': pygame.Rect(
-                self.viz_sec_button_left, 20 + 100, self.button_width, self.button_height), 'state': False},
+                self.viz_sec_button_left, 20 + 100, self.button_width, self.button_height), 'state': False, 'visible': False},
             {'text': 'Toggle Action Values', 'rect': pygame.Rect(
-                self.viz_sec_button_left, 20 + 150, self.button_width, self.button_height), 'state': False},
+                self.viz_sec_button_left, 20 + 150, self.button_width, self.button_height), 'state': False, 'visible': False},
             {'text': 'Toggle Policy Arrows', 'rect': pygame.Rect(
-                self.viz_sec_button_left, 20 + 200, self.button_width, self.button_height), 'state': False},
+                self.viz_sec_button_left, 20 + 200, self.button_width, self.button_height), 'state': False, 'visible': False},
         ]
 
         self.viz_sec_right_edge = self.viz_sec_left + self.button_width + 40
@@ -95,13 +95,19 @@ class GridWorldViz:
         # algorithm control buttons
         self.algo_control_buttons = [
             {'text': 'Policy Evaluation', 'rect': pygame.Rect(
-                self.cont_sec_button_left, self.cont_sec_top + 20 + 100, self.button_width, self.button_height)},
+                self.cont_sec_button_left, self.cont_sec_top + 20 + 100, self.button_width, self.button_height), 'visible': False},
             {'text': 'Policy Improvement', 'rect': pygame.Rect(
-                self.cont_sec_button_left, self.cont_sec_top + 20 + 200, self.button_width, self.button_height)},
+                self.cont_sec_button_left, self.cont_sec_top + 20 + 200, self.button_width, self.button_height), 'visible': False},
             {'text': 'Reset Algorithm', 'rect': pygame.Rect(
-                self.cont_sec_button_left, self.cont_sec_top + 20 + 250, self.button_width, self.button_height)},
+                self.cont_sec_button_left, self.cont_sec_top + 20 + 250, self.button_width, self.button_height), 'visible': False},
+
+            # For Value Iteration
+            {'text': 'Iterate one step', 'rect': pygame.Rect(
+                self.cont_sec_button_left, self.cont_sec_top + 20 + 200, self.button_width, self.button_height), 'visible': False},
+
+            # For Model-Free algorithms
             {'text': 'Generate Experience', 'rect': pygame.Rect(
-                self.cont_sec_button_left, self.cont_sec_top + 20 + 300, self.button_width, self.button_height)}
+                self.cont_sec_button_left, self.cont_sec_top + 20 + 300, self.button_width, self.button_height), 'visible': False},
         ]
 
         self.cont_sec_bottom_edge = self.cont_sec_top + 20 + 300 + self.button_height + 20
@@ -118,9 +124,9 @@ class GridWorldViz:
 
         self.agent_control_buttons = [
             {'text': 'Move Agent', 'rect': pygame.Rect(
-                self.agent_sec_button_left, self.agent_sec_top + 20 + 50, self.button_width, self.button_height)},
+                self.agent_sec_button_left, self.agent_sec_top + 20 + 50, self.button_width, self.button_height), 'visible': True},
             {'text': 'Reset Agent', 'rect': pygame.Rect(
-                self.agent_sec_button_left, self.agent_sec_top + 20 + 100, self.button_width, self.button_height)}
+                self.agent_sec_button_left, self.agent_sec_top + 20 + 100, self.button_width, self.button_height), 'visible': True},
         ]
 
         # Screen
@@ -327,6 +333,8 @@ class GridWorldViz:
         # Draw steps and buttons w.r.t. current algorithm
         if isinstance(self.current_alg, PolicyIteration):
             self._draw_policy_iteration_controls()
+        elif isinstance(self.current_alg, ValueIteration):
+            self._draw_value_iteration_controls()
         else:
             # Draw nothing if no algorithm is selected
             pass
@@ -349,14 +357,35 @@ class GridWorldViz:
 
         # Draw buttons
         for i, button in enumerate(self.algo_control_buttons):
-            if button['text'] == 'Generate Experience':
-                break
+            if i > 2:
+                button['visible'] = False
+            else:
+                button['visible'] = True
+                pygame.draw.rect(self.screen, self.WHITE, button['rect'])
+                pygame.draw.rect(self.screen, self.BLACK, button['rect'], 1)
+                text = self.font.render(button['text'], True, self.BLACK)
+                text_rect = text.get_rect(center=button['rect'].center)
+                self.screen.blit(text, text_rect)
 
-            pygame.draw.rect(self.screen, self.WHITE, button['rect'])
-            pygame.draw.rect(self.screen, self.BLACK, button['rect'], 1)
-            text = self.font.render(button['text'], True, self.BLACK)
-            text_rect = text.get_rect(center=button['rect'].center)
-            self.screen.blit(text, text_rect)
+    def _draw_value_iteration_controls(self):
+        # Draw steps
+        self.iter_step_counter['text'] = f'Iteration Steps: {self.iteration_steps}'
+        text = self.font.render(self.iter_step_counter['text'], True, self.BLACK)
+        text_rect = text.get_rect(center=self.iter_step_counter['rect'].center)
+        self.screen.blit(text, text_rect)
+
+        # Draw buttons
+        for i, button in enumerate(self.algo_control_buttons):
+            if i < 2 or i > 3:
+                button['visible'] = False
+            else:
+                button['visible'] = True
+
+                pygame.draw.rect(self.screen, self.WHITE, button['rect'])
+                pygame.draw.rect(self.screen, self.BLACK, button['rect'], 1)
+                text = self.font.render(button['text'], True, self.BLACK)
+                text_rect = text.get_rect(center=button['rect'].center)
+                self.screen.blit(text, text_rect)
 
     def draw_agent_sec(self):
         """Draw agent control section."""
@@ -411,6 +440,9 @@ class GridWorldViz:
     def handle_algo_control(self, pos):
         """Handle algorithm control button clicks."""
         for i, button in enumerate(self.algo_control_buttons):
+            if not button['visible']:
+                continue
+
             if button['rect'].collidepoint(pos):
                 if self.current_alg is None:
                     self.show_toast("Please select an algorithm first!")
@@ -421,6 +453,8 @@ class GridWorldViz:
                         self.policy_improvement()
                     elif button['text'] == 'Reset Algorithm':
                         self.reset_algorithm()
+                    elif button['text'] == 'Iterate one step':
+                        self.algo_step()
 
     def handle_agent_control(self, pos):
         """Handle agent control button clicks."""
@@ -469,6 +503,20 @@ class GridWorldViz:
         self.current_alg.reset()
         self.evaluation_steps = 0
         self.iteration_steps = 0
+        self.is_eval_converged = False
+        self.is_policy_converged = False
+
+    def algo_step(self):
+        """Perform a single step of the algorithm."""
+        if self.is_policy_converged:
+            self.show_toast("Policy improvement already converged!")
+        else:
+            is_converged = self.current_alg.step()
+            self.iteration_steps += 1
+
+            if is_converged:
+                self.show_toast("Algorithm converged!")
+                self.is_policy_converged = True
 
     def move_agent(self):
         """Move the agent based on the current policy."""

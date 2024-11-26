@@ -64,6 +64,15 @@ Windows 유저는 WSL2 환경에서 실행하는 것을 권장합니다.
 
 강화학습 알고리즘들을 구현하고, 간단한 Grid World 환경에서 동작하는 모습을 시각화한 프로젝트입니다. `GridWorld.py`는 간단한 Grid World 환경을 제공하는 모듈이고, `RLAlgorithms.py`는 강화학습 알고리즘들을 구현한 모듈입니다. 구현한 알고리즘에는 Policy Iteration (DP)이 포함됩니다. `UI.py`는 pygame 라이브러리로 제작한 UI로, 사용자가 알고리즘과 에이전트와 상호작용할 수 있습니다. 이 프로젝트를 실행하는 main script는 다음과 같이 실행할 수 있습니다:
 
+구현된 알고리즘:
+
+- Policy Iteration (DP)
+- Value Iteration (DP)
+- ~~TD Learning~~
+- ~~Monte Carlo Evaluation~~
+- ~~SARSA($\lambda$)~~
+- ~~Q-Learning~~
+
 ```bash
 # Root 디렉토리에서 실행
 python Algorithms/main.py

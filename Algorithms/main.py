@@ -1,7 +1,7 @@
 import numpy as np
 import pygame
 from GridWorld import GridWorld
-from RLAlgorithms import PolicyIteration#, ValueIteration, QLearning
+from RLAlgorithms import PolicyIteration, ValueIteration  # , QLearning
 from UI import GridWorldViz
 
 
@@ -12,7 +12,7 @@ def main(seed=42):
     # Create algorithms with seed
     algorithms = [
         PolicyIteration(env, gamma=0.9, seed=seed),
-        # 'value_iteration': ValueIteration(env, gamma=0.9, seed=seed),
+        ValueIteration(env, gamma=0.9, seed=seed),
         # 'q_learning': QLearning(env, gamma=0.9, alpha=0.1, epsilon=0.1, seed=seed)
     ]
 
