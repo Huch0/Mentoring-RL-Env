@@ -17,7 +17,7 @@ class UI:
         """Draw the game grid."""
         for row in range(self.game.m):
             for col in range(self.game.n):
-                value = self.game.grid[row][col]
+                value = self.game.grid[0][row][col]
                 color = (255, 255, 255) if value == 0 else (0, 255, 0)
                 pygame.draw.rect(
                     self.screen, color,
@@ -56,7 +56,8 @@ class UI:
 
                 self.selected_square.append(coord)
                 if len(self.selected_square) == 2:
-                    self.game.step(tuple(self.selected_square))
+                    (x1, y1), (x2, y2) = self.selected_square
+                    self.game.step(tuple((x1, y1, x2, y2)))
                     self.selected_square = []  # Clear selected squares
 
         return True

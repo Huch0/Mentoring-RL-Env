@@ -1,8 +1,8 @@
 import argparse
 import pygame
-from AppleGameEnv.UI import UI
-from AppleGameEnv.AppleGame import AppleGame
-from AppleGameEnv.AppleGameEnv import AppleGameEnv
+from UI import UI
+from AppleGame import AppleGame
+from AppleGameEnv import AppleGameEnv
 from stable_baselines3 import PPO  # Assuming PPO is the algorithm used for training
 
 
