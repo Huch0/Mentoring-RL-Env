@@ -99,10 +99,12 @@ class GridWorldViz:
             {'text': 'Policy Improvement', 'rect': pygame.Rect(
                 self.cont_sec_button_left, self.cont_sec_top + 20 + 200, self.button_width, self.button_height)},
             {'text': 'Reset Algorithm', 'rect': pygame.Rect(
-                self.cont_sec_button_left, self.cont_sec_top + 20 + 250, self.button_width, self.button_height)}
+                self.cont_sec_button_left, self.cont_sec_top + 20 + 250, self.button_width, self.button_height)},
+            {'text': 'Generate Experience', 'rect': pygame.Rect(
+                self.cont_sec_button_left, self.cont_sec_top + 20 + 300, self.button_width, self.button_height)}
         ]
 
-        self.cont_sec_bottom_edge = self.cont_sec_top + 20 + 250 + self.button_height + 20
+        self.cont_sec_bottom_edge = self.cont_sec_top + 20 + 300 + self.button_height + 20
 
         # Agent control section
         self.selected_action = None
@@ -156,90 +158,98 @@ class GridWorldViz:
                                    self.CELL_SIZE, self.CELL_SIZE)
 
                 s = self.env.index_to_state(i, j)
-                # Draw cell background
-                if s in self.env.terminal_states:
-                    color = self.GREEN if self.env.rewards[s] > 0 else self.RED
-                elif s in self.env.walls:
-                    color = self.GRAY
-                elif s in self.env.penalty_states:
-                    color = self.RED
-                else:
-                    color = self.WHITE
-                pygame.draw.rect(self.screen, color, rect)
-                pygame.draw.rect(self.screen, self.BLACK, rect, 1)
+                self.draw_cell_background(rect, s)
+                self.draw_rewards(rect, s)
+                self.draw_state_values(rect, s)
+                self.draw_action_values(rect, s)
+                self.draw_policy_arrows(rect, s)
 
-                # Draw rewards if enabled
-                if self.show_rewards:
-                    text = self.font.render(f'{self.env.rewards[s]:.1f}', True, self.BLACK)
-                    text_rect = text.get_rect(center=rect.center)
-                    self.screen.blit(text, text_rect)
+    def draw_cell_background(self, rect, s):
+        """Draw the background of a cell."""
+        if s in self.env.terminal_states:
+            color = self.GREEN if self.env.rewards[s] > 0 else self.RED
+        elif s in self.env.walls:
+            color = self.GRAY
+        elif s in self.env.penalty_states:
+            color = self.RED
+        else:
+            color = self.WHITE
+        pygame.draw.rect(self.screen, color, rect)
+        pygame.draw.rect(self.screen, self.BLACK, rect, 1)
 
-                # Draw state-value, action-value, and policy if enabled
-                if self.current_alg is not None:
-                    # Draw state values
-                    if self.show_state_values:
-                        v_s = self.current_alg.values[s]
-                        text = self.font.render(f'{v_s:.2f}', True, self.BLACK)
-                        text_rect = text.get_rect(center=rect.center)
-                        self.screen.blit(text, text_rect)
+    def draw_rewards(self, rect, s):
+        """Draw rewards in a cell if enabled."""
+        if self.show_rewards:
+            text = self.font.render(f'{self.env.rewards[s]:.1f}', True, self.BLACK)
+            text_rect = text.get_rect(center=rect.center)
+            self.screen.blit(text, text_rect)
 
-                    # Draw action values
-                    if self.show_action_values:
-                        for a in self.env.actions:
-                            q_sa = self.current_alg.q_values[s, a]
-                            text = self.font.render(f'{q_sa:.2f}', True, self.BLACK)
-                            if a == 0:
-                                text_rect = text.get_rect(midtop=rect.midtop)
-                            elif a == 1:
-                                text_rect = text.get_rect(midright=rect.midright)
-                            elif a == 2:
-                                text_rect = text.get_rect(midbottom=rect.midbottom)
-                            elif a == 3:
-                                text_rect = text.get_rect(midleft=rect.midleft)
-                            self.screen.blit(text, text_rect)
+    def draw_state_values(self, rect, s):
+        """Draw state values in a cell if enabled."""
+        if self.current_alg is not None and self.show_state_values:
+            v_s = self.current_alg.values[s]
+            text = self.font.render(f'{v_s:.2f}', True, self.BLACK)
+            text_rect = text.get_rect(center=rect.center)
+            self.screen.blit(text, text_rect)
 
-                    # Draw policy arrows
-                    if self.show_policy:
-                        policy_probs = self.current_alg.policy[s]
-                        for a, prob in enumerate(policy_probs):
-                            if prob > 0:
-                                if a == 0:  # Up
-                                    start_pos = (rect.centerx, rect.centery - self.CELL_SIZE // 4)
-                                    end_pos = (rect.centerx, rect.centery - self.CELL_SIZE // 2)
-                                elif a == 1:  # Right
-                                    start_pos = (rect.centerx + self.CELL_SIZE // 4, rect.centery)
-                                    end_pos = (rect.centerx + self.CELL_SIZE // 2, rect.centery)
-                                elif a == 2:  # Down
-                                    start_pos = (rect.centerx, rect.centery + self.CELL_SIZE // 4)
-                                    end_pos = (rect.centerx, rect.centery + self.CELL_SIZE // 2)
-                                elif a == 3:  # Left
-                                    start_pos = (rect.centerx - self.CELL_SIZE // 4, rect.centery)
-                                    end_pos = (rect.centerx - self.CELL_SIZE // 2, rect.centery)
-                                if s == self.env.agent_trace[-2] and a == self.selected_action:
-                                    color = self.RED
-                                else:
-                                    color = self.BLACK
-                                self.draw_arrow(a, start_pos, end_pos, color)
+    def draw_action_values(self, rect, s):
+        """Draw action values in a cell if enabled."""
+        if self.current_alg is not None and self.show_action_values:
+            for a in self.env.actions:
+                q_sa = self.current_alg.q_values[s, a]
+                text = self.font.render(f'{q_sa:.2f}', True, self.BLACK)
+                if a == 0:
+                    text_rect = text.get_rect(midtop=rect.midtop)
+                elif a == 1:
+                    text_rect = text.get_rect(midright=rect.midright)
+                elif a == 2:
+                    text_rect = text.get_rect(midbottom=rect.midbottom)
+                elif a == 3:
+                    text_rect = text.get_rect(midleft=rect.midleft)
+                self.screen.blit(text, text_rect)
+
+    def draw_policy_arrows(self, rect, s):
+        """Draw policy arrows in a cell if enabled."""
+        if self.current_alg is not None and self.show_policy:
+            policy_probs = self.current_alg.policy[s]
+            for a, prob in enumerate(policy_probs):
+                if prob > 0:
+                    start_pos, end_pos = self.get_arrow_positions(rect, a)
+                    color = self.RED if s == self.env.agent_trace[-2] and a == self.selected_action else self.BLACK
+                    self.draw_arrow(a, start_pos, end_pos, color)
+
+    def get_arrow_positions(self, rect, a):
+        """Get start and end positions for drawing an arrow."""
+        if a == 0:  # Up
+            start_pos = (rect.centerx, rect.centery - self.CELL_SIZE // 4)
+            end_pos = (rect.centerx, rect.centery - self.CELL_SIZE // 2)
+        elif a == 1:  # Right
+            start_pos = (rect.centerx + self.CELL_SIZE // 4, rect.centery)
+            end_pos = (rect.centerx + self.CELL_SIZE // 2, rect.centery)
+        elif a == 2:  # Down
+            start_pos = (rect.centerx, rect.centery + self.CELL_SIZE // 4)
+            end_pos = (rect.centerx, rect.centery + self.CELL_SIZE // 2)
+        elif a == 3:  # Left
+            start_pos = (rect.centerx - self.CELL_SIZE // 4, rect.centery)
+            end_pos = (rect.centerx - self.CELL_SIZE // 2, rect.centery)
+        return start_pos, end_pos
 
     def draw_arrow(self, direction, start_pos, end_pos, color, width=2):
         """Draw an arrow from start_pos to end_pos."""
+        pygame.draw.line(self.screen, color, start_pos, end_pos, width)
         if direction == 0:
-            pygame.draw.line(self.screen, color, start_pos, end_pos, width)
             pygame.draw.polygon(self.screen, color, [(end_pos[0] - 5, end_pos[1] + 5),
                                                      end_pos,
                                                      (end_pos[0] + 5, end_pos[1] + 5)])
         elif direction == 1:
-            pygame.draw.line(self.screen, color, start_pos, end_pos, width)
             pygame.draw.polygon(self.screen, color, [(end_pos[0] - 5, end_pos[1] - 5),
                                                      end_pos,
                                                      (end_pos[0] - 5, end_pos[1] + 5)])
         elif direction == 2:
-            pygame.draw.line(self.screen, color, start_pos, end_pos, width)
             pygame.draw.polygon(self.screen, color, [(end_pos[0] - 5, end_pos[1] - 5),
                                                      end_pos,
                                                      (end_pos[0] + 5, end_pos[1] - 5)])
         elif direction == 3:
-            pygame.draw.line(self.screen, color, start_pos, end_pos, width)
             pygame.draw.polygon(self.screen, color, [(end_pos[0] + 5, end_pos[1] - 5),
                                                      end_pos,
                                                      (end_pos[0] + 5, end_pos[1] + 5)])
@@ -287,6 +297,10 @@ class GridWorldViz:
         self.screen.blit(text, text_rect)
 
         for i, button in enumerate(self.viz_config_buttons):
+            # Only draw reward button unless an algorithm is selected
+            if i > 0 and self.current_alg is None:
+                break
+
             # Toggle buttons color: GREEN if enabled, WHITE if disabled
             color = self.GREEN if button['state'] else self.WHITE
             pygame.draw.rect(self.screen, color, button['rect'])
@@ -310,6 +324,18 @@ class GridWorldViz:
         text_rect = text.get_rect(center=self.cont_sec_title['rect'].center)
         self.screen.blit(text, text_rect)
 
+        # Draw steps and buttons w.r.t. current algorithm
+        if isinstance(self.current_alg, PolicyIteration):
+            self._draw_policy_iteration_controls()
+        else:
+            # Draw nothing if no algorithm is selected
+            pass
+
+        # Draw bottom edge
+        pygame.draw.line(self.screen, self.BLACK, (self.cont_sec_left, self.cont_sec_bottom_edge),
+                         (self.viz_sec_right_edge, self.cont_sec_bottom_edge), 2)
+
+    def _draw_policy_iteration_controls(self):
         # Draw steps
         self.eval_step_counter['text'] = f'Evaluation Steps: {self.evaluation_steps}'
         text = self.font.render(self.eval_step_counter['text'], True, self.BLACK)
@@ -328,10 +354,6 @@ class GridWorldViz:
             text = self.font.render(button['text'], True, self.BLACK)
             text_rect = text.get_rect(center=button['rect'].center)
             self.screen.blit(text, text_rect)
-
-        # Draw bottom edge
-        pygame.draw.line(self.screen, self.BLACK, (self.cont_sec_left, self.cont_sec_bottom_edge),
-                         (self.viz_sec_right_edge, self.cont_sec_bottom_edge), 2)
 
     def draw_agent_sec(self):
         """Draw agent control section."""
@@ -352,14 +374,27 @@ class GridWorldViz:
     def handle_click(self, pos):
         """Handle mouse clicks on buttons."""
         # Algorithm selection buttons
+        self.handle_algo_selection(pos)
+
+        # Visualization configuration buttons
+        self.handle_viz_config(pos)
+
+        # Algorithm control buttons
+        self.handle_algo_control(pos)
+
+        # Agent control buttons
+        self.handle_agent_control(pos)
+
+    def handle_algo_selection(self, pos):
+        """Handle algorithm selection button clicks."""
         for i, button in enumerate(self.algo_buttons):
             if button['rect'].collidepoint(pos):
                 self.current_alg = self.algorithms[i]
 
-        # Visualization configuration buttons
+    def handle_viz_config(self, pos):
+        """Handle visualization configuration button clicks."""
         for i, button in enumerate(self.viz_config_buttons):
             if button['rect'].collidepoint(pos):
-                # Handle toggle buttons
                 button['state'] = not button['state']
                 if button['text'] == 'Toggle Rewards':
                     self.show_rewards = button['state']
@@ -370,63 +405,81 @@ class GridWorldViz:
                 elif button['text'] == 'Toggle Policy Arrows':
                     self.show_policy = button['state']
 
-        # Algorithm control buttons
+    def handle_algo_control(self, pos):
+        """Handle algorithm control button clicks."""
         for i, button in enumerate(self.algo_control_buttons):
             if button['rect'].collidepoint(pos):
                 if self.current_alg is None:
                     self.show_toast("Please select an algorithm first!")
-
                 else:
                     if button['text'] == 'Policy Evaluation':
-                        if self.is_eval_converged:
-                            self.show_toast("Policy evaluation already converged!")
-                        else:
-                            delta = self.current_alg.policy_evaluation_step()
-                            self.evaluation_steps += 1
-                            self.is_policy_converged = False
-
-                            if delta < 1e-6:
-                                self.show_toast("Policy evaluation converged!")
-                                self.is_eval_converged = True
-
+                        self.policy_evaluation()
                     elif button['text'] == 'Policy Improvement':
-                        if self.evaluation_steps == 0:
-                            # Show warning message with a toast
-                            self.show_toast("Please perform policy evaluation first!")
-                        elif self.is_policy_converged:
-                            self.show_toast("Policy improvement already converged!")
-                        else:
-                            is_policy_converged = self.current_alg.policy_improvement_step()
-                            self.evaluation_steps = 0
-                            self.is_eval_converged = False
-
-                            if is_policy_converged:
-                                self.show_toast("Policy improvement converged!")
-                                self.is_policy_converged = True
-
-                            self.iteration_steps += 1
-
+                        self.policy_improvement()
                     elif button['text'] == 'Reset Algorithm':
-                        self.current_alg.reset()
-                        self.evaluation_steps = 0
-                        self.iteration_steps = 0
+                        self.reset_algorithm()
 
-        # Agent control buttons
+    def handle_agent_control(self, pos):
+        """Handle agent control button clicks."""
         for i, button in enumerate(self.agent_control_buttons):
             if button['rect'].collidepoint(pos):
                 if self.current_alg is None:
                     self.show_toast("Please select an algorithm first!")
                 else:
                     if button['text'] == 'Move Agent':
-                        if self.env.is_terminated():
-                            self.show_toast("Agent already reached terminal state!")
-                        else:
-                            self.selected_action = self.current_alg.select_action(self.env.agent_state)
-                            done = self.current_alg.move_agent(self.selected_action)
-                            if done:
-                                self.show_toast("Agent reached terminal state!")
+                        self.move_agent()
                     elif button['text'] == 'Reset Agent':
-                        self.current_alg.reset_agent()
+                        self.reset_agent()
+
+    def policy_evaluation(self):
+        """Perform a policy evaluation step."""
+        if self.is_eval_converged:
+            self.show_toast("Policy evaluation already converged!")
+        else:
+            delta = self.current_alg.policy_evaluation_step()
+            self.evaluation_steps += 1
+            self.is_policy_converged = False
+
+            if delta < 1e-6:
+                self.show_toast("Policy evaluation converged!")
+                self.is_eval_converged = True
+
+    def policy_improvement(self):
+        """Perform a policy improvement step."""
+        if self.evaluation_steps == 0:
+            self.show_toast("Please perform policy evaluation first!")
+        elif self.is_policy_converged:
+            self.show_toast("Policy improvement already converged!")
+        else:
+            is_policy_converged = self.current_alg.policy_improvement_step()
+            self.evaluation_steps = 0
+            self.is_eval_converged = False
+
+            if is_policy_converged:
+                self.show_toast("Policy improvement converged!")
+                self.is_policy_converged = True
+
+            self.iteration_steps += 1
+
+    def reset_algorithm(self):
+        """Reset the current algorithm."""
+        self.current_alg.reset()
+        self.evaluation_steps = 0
+        self.iteration_steps = 0
+
+    def move_agent(self):
+        """Move the agent based on the current policy."""
+        if self.env.is_terminated():
+            self.show_toast("Agent already reached terminal state!")
+        else:
+            self.selected_action = self.current_alg.select_action(self.env.agent_state)
+            done = self.current_alg.move_agent(self.selected_action)
+            if done:
+                self.show_toast("Agent reached terminal state!")
+
+    def reset_agent(self):
+        """Reset the agent to the initial state."""
+        self.current_alg.reset_agent()
 
     def show_toast(self, message, duration=1000):
         """Show a toast message on the screen."""
