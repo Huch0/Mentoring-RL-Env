@@ -73,7 +73,7 @@ class RLAlgorithm:
         """
         raise NotImplementedError
 
-    def select_policy_action(self, state: int) -> int:
+    def select_policy_action(self, state: int) -> int: # select_stochastic_action
         """
         Select an action based on the current policy using random sampling.
 

@@ -23,7 +23,7 @@ class GridWorld:
         # initial state
         self.initial_state = self.index_to_state(0, 0)
         self.agent_state = self.initial_state
-        self.agent_trace = [None, self.agent_state]
+        self.agent_trace = [None, self.agent_state] # comment
 
         # terminal states
         self.terminal_states = {
@@ -63,7 +63,7 @@ class GridWorld:
                     if s_prime == self.transition(s, a):  # Main movement
                         self.transition_probs[s, a, s_prime] = self.main_transition_prob
                     else:  # Perpendicular movements
-                        self.transition_probs[s, a, s_prime] = (1 - self.main_transition_prob) / (self.n_states - 1)
+                        self.transition_probs[s, a, s_prime] = (1 - self.main_transition_prob) / 2
 
     def move_agent(self, action):
         self.agent_state = self.transition_w_perp(self.agent_state, action)
@@ -91,7 +91,6 @@ class GridWorld:
 
     def get_possible_successors(self, state: int, action: int) -> list:
         "Return a list of possible successor states given a state and action considering walls, boundaries, and perpendicular movements."
-        i, j = self.state_to_index(state)
         successors = set()
 
         # Main movement
@@ -125,12 +124,12 @@ class GridWorld:
 
         return next_state
 
-    def state_to_index(self, state: int) -> tuple:
+    def state_to_index(self, state: int) -> tuple: # index_to_coord
         return (state // self.size, state % self.size)
 
-    def index_to_state(self, index_or_i, j=None) -> int:
-        if isinstance(index_or_i, tuple):
+    def index_to_state(self, index_or_i, j=None) -> int: # coord_to_index
+        if isinstance(index_or_i, tuple): # i, j are passed as a tuple
             i, j = index_or_i
-        else:
+        else: # i, j are passed as separate arguments
             i = index_or_i
         return i * self.size + j
